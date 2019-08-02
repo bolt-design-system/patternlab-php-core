@@ -43,7 +43,8 @@ class LineageHelper extends \PatternLab\PatternData\Helper {
 		$store = PatternData::get();
 		foreach ($store as $patternStoreKey => $patternStoreData) {
 			
-			if (($patternStoreData["category"] == "pattern") && (!isset($patternStoreData["pseudo"]))) {
+			// Check for lineages in patterns AND sub-patterns
+			if (($patternStoreData["category"] == "pattern" || $patternStoreData["category"] == "patternSubtype") && (!isset($patternStoreData["pseudo"]))) {
 				
 				$patternLineages = array();
 				$fileData        = isset($patternStoreData["patternRaw"]) ? $patternStoreData["patternRaw"] : "";
@@ -98,11 +99,25 @@ class LineageHelper extends \PatternLab\PatternData\Helper {
 							$lineage = $patternType . "-" . $patternName;	/* [11] */
 						}
 
+						// If we're having trouble finding a pattern's lineage (ex. due to using Twig namespaces that don't match a pattern's parent directory), try finding a pattern with the same pattern name. Solves https://github.com/EvanLovely/plugin-twig-namespaces/issues/4
+						if (PatternData::getOption($lineage) == false){
+							// Strip off the original lineage's pattern type so we can compare the original pattern name to the new one if we find a potential match.
+							$origPatternName = list($before, $after) = explode('-', $lineage, 2)[1];
+
+							//Loop through the patterns available and compare each pattern's patternName with the original lineage match that was found
+							foreach ($store as $altPatternStoreKey => $nestedPatternStoreData) {
+								$altPatternName = list($before, $after) = explode('-', $altPatternStoreKey, 2)[1];
+
+								// If we can't figure out the original pattern's lineage but found a match, use that instead.
+								if ($origPatternName == $altPatternName){
+									$lineage = $altPatternStoreKey;
+								}
+							}
+						}
+
 						if (PatternData::getOption($lineage)) {
-							
 							$patternLineages[] = array("lineagePattern" => $lineage,
 													   "lineagePath"    => "../../patterns/".$patternStoreData["pathDash"]."/".$patternStoreData["pathDash"].$suffixRendered.".html");
-							
 						} else {
 							
 							if (strpos($lineage, '/') === false) {
@@ -142,7 +157,7 @@ class LineageHelper extends \PatternLab\PatternData\Helper {
 		$store = PatternData::get();
 		foreach ($store as $patternStoreKey => $patternStoreData) {
 			
-			if (($patternStoreData["category"] == "pattern") && (!isset($patternStoreData["pseudo"])) && isset($patternStoreData["partial"])) {
+			if (($patternStoreData["category"] == "pattern" || $patternStoreData["category"] == "patternSubtype") && (!isset($patternStoreData["pseudo"])) && isset($patternStoreData["partial"])) {
 				
 				$patternLineagesR = array();
 				
