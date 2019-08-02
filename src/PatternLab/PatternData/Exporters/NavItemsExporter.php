@@ -145,7 +145,7 @@ class NavItemsExporter extends \PatternLab\PatternData\Exporter {
 			}
 			
 			// add an overall view all link to the menus with sub-menus
-			if (!empty($navItems["patternTypes"][$patternTypeKey]["patternTypeItems"])) {
+			if (!empty($navItems["patternTypes"][$patternTypeKey]["patternTypeItems"]) && !in_array($patternType,$this->styleGuideExcludes)) {
 				
 				$navItems["patternTypes"][$patternTypeKey]["patternItems"][] = array("patternPath"    => $patternType."/index.html",
 																					 "patternName"    => "View All",
